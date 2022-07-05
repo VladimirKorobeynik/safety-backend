@@ -150,4 +150,21 @@ class UserController extends Controller
         }
         return $this->onError(404, 'This user not found');
     }
+
+    public function updateUserPassword(Request $request, $user_id) {
+        $user = User::where('user_id', $user_id)->get()->first();
+
+        if ($user != null) {
+            if (Hash::check($request->old_password, $user->password)) {
+                $user->update([
+                    'password' => Hash::make($request->new_password)
+                ]);
+
+                return $this->onSuccess('', 'Password updated successfully!');
+            }
+            return $this->onError(400, 'Old password is not correct!');
+        }
+
+       return $this->onError(404, 'This user not found');
+    }
 }

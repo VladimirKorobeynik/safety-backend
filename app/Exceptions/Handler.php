@@ -3,10 +3,14 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Laravel\Passport\Exceptions\MissingScopeException;
+use Illuminate\Auth\AuthenticationException;
+use App\Traits\ApiHelper;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
+    use ApiHelper;
     /**
      * A list of exception types with their corresponding custom log levels.
      *
@@ -47,4 +51,22 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    public function report(Throwable $exception) 
+    {
+
+    }
+    
+    public function render($request, Throwable $exception) 
+    {
+        if ($exception instanceof MissingScopeException) {
+            return $this->onError(403, 'Forbidden');
+        }
+
+        if ($exception instanceof AuthenticationException) {
+            return $this->onError(401, 'Unauthorized');
+        }
+
+        return parent::render($request, $exception);
+    }   
 }

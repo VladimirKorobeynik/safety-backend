@@ -46,7 +46,7 @@ class RegisterController extends Controller
                     'password' => Hash::make($request->input('password')),
                 ]);
 
-                $successRegister['token'] = $user->createToken('MyApp')->accessToken;
+                $successRegister['token'] = $user->createToken('Access token', ['User'])->accessToken;
                 $successRegister['name'] = $user->name;
 
                 return $this->onSuccess($successRegister, 'User register successfully');

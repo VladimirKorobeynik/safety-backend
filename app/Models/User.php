@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\HasApiTokens;
 
 use App\Models\User;
 
@@ -57,5 +57,9 @@ class User extends Authenticatable
 
     public function getRole() {
         return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function getRoleName() {
+        return Role::where('role_id', $this->role_id)->select('name')->get()->first();
     }
 }

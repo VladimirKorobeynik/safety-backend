@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Laravel\Passport\Passport;
+use Carbon\Carbon;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,20 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        if (! $this->app->routesAreCached()) {
+            Passport::routes();
+
+            Passport::tokensCan([
+                'Admin' => 'Add/Edit/Delete Users',
+                'Operator' => 'Add/Edit Users',
+                'User' => 'List Users'
+            ]);
+        
+            Passport::setDefaultScope([
+                'User'
+            ]);
+
+            Passport::personalAccessTokensExpireIn(Carbon::now()->addHours(1));
+        }
     }
 }
