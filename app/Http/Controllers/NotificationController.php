@@ -31,13 +31,11 @@ class NotificationController extends Controller
     public function store(Request $request)
     {
         if (!empty(User::find($request->input('user_id')))) {
-            $notifyTime = Carbon::now()->toDateTimeString();
 
             $notification = Notification::create([
                 'user_id' => $request->input('user_id'),
                 'title' => $request->input('title'),
                 'content' => $request->input('content'),
-                'time' => $notifyTime
             ]);
     
             return $this->onSuccess($notification, 'Created notification');

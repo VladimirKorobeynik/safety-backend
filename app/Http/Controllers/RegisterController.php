@@ -23,7 +23,6 @@ class RegisterController extends Controller
             'address' => ['required'],
             'email' => ['required', 'email'],
             'birthday' => ['required'],
-            'login' => ['required'],
             'password' => ['required', 'min:8'],
         ]);
 
@@ -32,27 +31,24 @@ class RegisterController extends Controller
         }
 
         if (count(User::where('email', $request->email)->get()) === 0) {
-            if (count(User::where('login', $request->login)->get()) === 0) {
-                $user = User::create([
-                    'role_id' => 1,
-                    'name' => $request->input('name'),
-                    'surname' => $request->input('surname'),
-                    'number' => $request->input('number'),
-                    'address' => $request->input('address'),
-                    'email' => $request->input('email'),
-                    'birthday' => $request->input('birthday'),
-                    'login' => $request->input('login'),
-                    'is_active' => true,
-                    'password' => Hash::make($request->input('password')),
-                ]);
+            $user = User::create([
+                'role_id' => 1,
+                'name' => $request->input('name'),
+                'surname' => $request->input('surname'),
+                'number' => $request->input('number'),
+                'address' => $request->input('address'),
+                'email' => $request->input('email'),
+                'birthday' => $request->input('birthday'),
+                'is_active' => true,
+                'password' => Hash::make($request->input('password')),
+            ]);
 
-                $successRegister['token'] = $user->createToken('Access token', ['User'])->accessToken;
-                $successRegister['name'] = $user->name;
+            $successRegister['token'] = $user->createToken('Access token', ['User'])->accessToken;
+            $successRegister['user_id'] = $user->user_id;
+            $successRegister['name'] = $user->name;
+            $successRegister['surname'] = $user->surname;
 
-                return $this->onSuccess($successRegister, 'User register successfully');
-            } else {
-                return $this->onError(400, "This login is already taken");
-            }
+            return $this->onSuccess($successRegister, 'User register successfully');
         } else {
             return $this->onError(400, "This email is already taken");
         }

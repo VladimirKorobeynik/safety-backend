@@ -14,10 +14,10 @@ class Notification extends Model
 	    'user_id',
         'title',
         'content',
-        'time'
+        'created_at',
+        'updated_at',
     ];
 
     protected $primaryKey = 'notification_id';
-    public $timestamps = false;
 
 }

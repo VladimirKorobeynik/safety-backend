@@ -29,7 +29,6 @@ class User extends Authenticatable
         'address',
         'email',
         'birthday',
-        'login',
         'is_active',
         'password',
     ];

@@ -31,13 +31,13 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'role_id' => ['required'],
             'name' => ['required'],
             'surname' => ['required'],
             'number' => ['required', 'min:12', 'numeric'],
             'address' => ['required'],
             'email' => ['required', 'email'],
             'birthday' => ['required'],
-            'login' => ['required'],
             'password' => ['required', 'min:8'],
         ]);
 
@@ -46,24 +46,19 @@ class UserController extends Controller
         }
 
         if (count(User::where('email', $request->email)->get()) === 0) {
-            if (count(User::where('login', $request->login)->get()) === 0) {
-                $user = User::create([
-                    'role_id' => 1,
-                    'name' => $request->input('name'),
-                    'surname' => $request->input('surname'),
-                    'number' => $request->input('number'),
-                    'address' => $request->input('address'),
-                    'email' => $request->input('email'),
-                    'birthday' => $request->input('birthday'),
-                    'login' => $request->input('login'),
-                    'is_active' => true,
-                    'password' => Hash::make($request->input('password')),
-                ]);
-        
-                return $this->onSuccess(new UserResource($user), 'User created');
-            } else {
-                return $this->onError(400, "This login is already taken");
-            }
+            $user = User::create([
+                'role_id' => $request->input('role_id'),
+                'name' => $request->input('name'),
+                'surname' => $request->input('surname'),
+                'number' => $request->input('number'),
+                'address' => $request->input('address'),
+                'email' => $request->input('email'),
+                'birthday' => $request->input('birthday'),
+                'is_active' => true,
+                'password' => Hash::make($request->input('password')),
+            ]);
+    
+            return $this->onSuccess(new UserResource($user), 'User created');
         } else {
             return $this->onError(400, "This email is already taken");
         }
@@ -101,8 +96,6 @@ class UserController extends Controller
                 'address' => ['required'],
                 'email' => ['required', 'email'],
                 'birthday' => ['required'],
-                'login' => ['required'],
-                'password' => ['min:8'],
             ]);
 
             if ($validator->fails()) {
@@ -110,25 +103,18 @@ class UserController extends Controller
             }
 
             $userEmail = User::where('user_id', $user_id)->get('email')->first();
-            $userlogin = User::where('user_id', $user_id)->get('login')->first();
 
             if (count(User::where('email', $request->email)->where('email', '!=' , $userEmail->email)->get()) === 0) {
-                if (count(User::where('login', $request->login)->where('login', '!=' , $userlogin->login)->get()) === 0) {
-                    $updatedUser = User::find($user_id)->update([
-                        'name' => $request->name,
-                        'surname' => $request->surname,
-                        'number' => $request->number,
-                        'address' => $request->address,
-                        'email' => $request->email,
-                        'birthday' => $request->birthday,
-                        'login' => $request->login,
-                        'is_active' => true,
-                        'password' => Hash::make($request->password),
-                    ]);
-                    return $this->onSuccess($updatedUser, 'User updated');
-                } else {
-                    return $this->onError(400, 'This login is already taken');
-                }
+                $updatedUser = User::find($user_id)->update([
+                    'name' => $request->name,
+                    'surname' => $request->surname,
+                    'number' => $request->number,
+                    'address' => $request->address,
+                    'email' => $request->email,
+                    'birthday' => $request->birthday,
+                    'is_active' => true,
+                ]);
+                return $this->onSuccess($updatedUser, 'User updated');
             } else {
                 return $this->onError(400, 'This email is already taken');
             }

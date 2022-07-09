@@ -31,7 +31,9 @@ class AuthController extends Controller
         if ($user != null && Hash::check($request->password, $user->password)) {
             $userRole = Role::where('role_id', $user->role_id)->select('name')->get()->first();
             $successRegister['token'] = $user->createToken('Access token', [$userRole->name])->accessToken;
+            $successRegister['user_id'] = $user->user_id;
             $successRegister['name'] = $user->name;
+            $successRegister['surname'] = $user->surname;
 
             return $this->onSuccess($successRegister, 'Sign in successfully');
         }  
