@@ -19,10 +19,7 @@ class RegisterController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => ['required'],
             'surname' => ['required'],
-            'number' => ['required', 'min:12', 'numeric'],
-            'address' => ['required'],
             'email' => ['required', 'email'],
-            'birthday' => ['required'],
             'password' => ['required', 'min:8'],
         ]);
 
@@ -35,10 +32,10 @@ class RegisterController extends Controller
                 'role_id' => 1,
                 'name' => $request->input('name'),
                 'surname' => $request->input('surname'),
-                'number' => $request->input('number'),
-                'address' => $request->input('address'),
+                'number' => null,
+                'address' => null,
                 'email' => $request->input('email'),
-                'birthday' => $request->input('birthday'),
+                'birthday' => null,
                 'is_active' => true,
                 'password' => Hash::make($request->input('password')),
             ]);

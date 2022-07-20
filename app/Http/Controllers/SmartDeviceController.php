@@ -8,6 +8,9 @@ use App\Models\UserSensor;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Traits\ApiHelper;
+use App\Exports\DevicesExport;
+use App\Imports\DevicesImport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\MailController;
 use Mail;
 
@@ -19,9 +22,15 @@ class SmartDeviceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return $this->onSuccess(SmartDevice::all(), '');
+        $devices;
+        if ($request->searchString != '') {
+            $devices = SmartDevice::where('smart_device_number', 'like', $request->searchString . '%')->get();
+        } else {
+            $devices = SmartDevice::all();
+        }
+        return $this->onSuccess($devices, '');
     }
 
     /**
@@ -173,4 +182,16 @@ class SmartDeviceController extends Controller
         }
         return $this->onError(404, 'This smart device not found');
    }
+
+
+   public function exportDevices() {
+        return (new DevicesExport)->download('devices.xlsx', \Maatwebsite\Excel\Excel::XLSX);
+    }
+
+    public function importDevices(Request $request) {
+        $path1 = $request->file('file')->store('temp'); 
+        $path=storage_path('app').'/'.$path1;
+        Excel::import(new DevicesImport, $path);
+        return $this->onSuccess('', '');
+    }
 }

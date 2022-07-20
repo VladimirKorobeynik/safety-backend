@@ -68,14 +68,25 @@ class UserSensorController extends Controller
         //
     }
 
-    public function getUserSensors($user_id)
+    public function getUserSensors($user_id, Request $request)
     {
         if (User::find($user_id)) {
-            $userSensors = UserSensorsResource::collection(
-                $this->convertUserSensorsWithSmartDevice(UserSensor::where('user_id', $user_id)
-                ->where('is_activated', 1)
-                ->get()
-            ));
+            $userSensors;
+            if ($request->searchString != '') {
+                $userSensors = UserSensorsResource::collection(
+                    $this->convertUserSensorsWithSmartDevice(UserSensor::where('user_id', $user_id)
+                    ->where('is_activated', 1)
+                    ->where('smart_device_id', 'like', '%' . $request->searchString . '%')
+                    ->get()
+                ));
+            } else {
+                $userSensors = UserSensorsResource::collection(
+                    $this->convertUserSensorsWithSmartDevice(UserSensor::where('user_id', $user_id)
+                    ->where('is_activated', 1)
+                    ->get()
+                ));
+            }
+           
             return $this->onSuccess($userSensors, '');
         }
         return $this->onError(404, 'This user not found');
@@ -96,10 +107,50 @@ class UserSensorController extends Controller
             $smartDeviceWithSensors = [];
             $smartDeviceWithSensors["smart_device_id"] = $id;
             $smartDeviceWithSensors["sensors"] = [];
+            $smartDeviceWithSensors["isBinded"] = false;
             foreach ($request as $sensor) {
                 if ($sensor->smart_device_id === $id) {
                     array_push($smartDeviceWithSensors["sensors"], $sensor);
                 }
+            }
+            $deviceSensorsCount = count($smartDeviceWithSensors["sensors"]);
+            $bindedSensors = 0;
+
+            $count_gas_sensors = 0;
+            $count_humidity_sensors = 0;
+            $count_smoke_sensors = 0;
+            $count_motion_sensors = 0;
+
+            foreach ($smartDeviceWithSensors["sensors"] as $sensor) {
+                if ($sensor->house_id != null) {
+                    $bindedSensors++;
+                }
+
+                switch ($sensor->sensor_id) {
+                    case 1:
+                        $count_gas_sensors++;
+                        break;
+                    case 2:
+                        $count_humidity_sensors++;
+                        break;
+                    case 3:
+                        $count_smoke_sensors++;
+                        break;
+                    case 4:
+                        $count_motion_sensors++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            $smartDeviceWithSensors["count_gas_sensors"] = $count_gas_sensors;
+            $smartDeviceWithSensors["count_humidity_sensors"] = $count_humidity_sensors;
+            $smartDeviceWithSensors["count_smoke_sensors"] = $count_smoke_sensors;
+            $smartDeviceWithSensors["count_motion_sensors"] = $count_motion_sensors;
+
+            if ($deviceSensorsCount == $bindedSensors) {
+                $smartDeviceWithSensors["isBinded"] = true;
             }
             array_push($result, $smartDeviceWithSensors);
         }
@@ -123,7 +174,7 @@ class UserSensorController extends Controller
     }
 
     public function updateSensorValue(Request $request) {
-        $sensor = UserSensor::where('user_sensor_id', $user_sensor_id)->get()->first();
+        $sensor = UserSensor::where('user_sensor_id', $request->user_sensor_id)->get()->first();
 
         if ($sensor != null) {
             $sensor->update([

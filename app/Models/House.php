@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class House extends Model
 {
@@ -21,4 +23,8 @@ class House extends Model
 
     protected $primaryKey = 'house_id';
     public $timestamps = false;
+
+    public function getHouseOwner() {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

@@ -9,7 +9,7 @@ trait ApiHelper {
     protected function onSuccess($data, string $message = '', int $code = 200): JsonResponse
     {
         return response()->json([
-            'status' => $code,
+            'status' => 'Success',
             'message' => $message,
             'data' => $data,
         ], $code);
@@ -18,8 +18,9 @@ trait ApiHelper {
     protected function onError(int $code, string $message = ''): JsonResponse
     {
         return response()->json([
-            'status' => $code,
+            'status' => 'Error',
+            'code' => $code,
             'message' => $message,
-        ], $code);
+        ], 200);
     }
 }

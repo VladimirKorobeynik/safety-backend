@@ -44,6 +44,8 @@ Route::middleware(['auth:api', 'role'])->group(function() {
     Route::middleware(['scope:Admin,User,Operator'])->get('/getUser/{user_id}', [UserController::class, 'show']);
     Route::middleware(['scope:Admin,User,Operator'])->delete('/deleteUser/{user_id}', [UserController::class, 'destroy']);
     Route::middleware(['scope:Admin,User,Operator'])->put('/updateUserPassword/{user_id}', [UserController::class, 'updateUserPassword']);
+    Route::middleware(['scope:Admin'])->get('/getRoles', [UserController::class, 'getRoles']);
+    Route::middleware(['scope:Admin'])->get('/exportUsers', [UserController::class, 'exportUsers']);
 
     //Notification
     Route::middleware(['scope:Admin'])->get('/allNotifications', [NotificationController::class, 'index']);
@@ -63,6 +65,8 @@ Route::middleware(['auth:api', 'role'])->group(function() {
     Route::middleware(['scope:Operator'])->get('/getOperatorResponsibilityHouses/{user_id}', [HouseController::class, 'getOperatorResponsibilityHouse']);
     Route::middleware(['scope:User'])->put('/bindSmartDeviceToHouse', [HouseController::class, 'bindSmartDeviceToHouse']);
     Route::middleware(['scope:User'])->get('/getHouseScripts/{house_id}', [HouseController::class, 'getHouseScripts']);
+    Route::middleware(['scope:User'])->get('/getUserHousesWithStatistics/{user_id}', [HouseController::class, 'getUserHousesWithStatistics']);
+    Route::middleware(['scope:Admin'])->get('/exportHouses', [HouseController::class, 'exportHouses']);
 
     //User Sensor
     Route::middleware(['scope:Admin'])->get('/allUsersSensors', [UserSensorController::class, 'index']);
@@ -84,4 +88,6 @@ Route::middleware(['auth:api', 'role'])->group(function() {
     Route::middleware(['scope:Admin'])->post('/createSmartDevice', [SmartDeviceController::class, 'store']);
     Route::middleware(['scope:Admin'])->delete('/deleteSmartDevice/{smt_dev_id}', [SmartDeviceController::class, 'destroy']);
     Route::middleware(['scope:User'])->put('/activateSmartDevice', [SmartDeviceController::class, 'activateSmartDevice']);
+    Route::middleware(['scope:Admin'])->get('/exportDevices', [SmartDeviceController::class, 'exportDevices']);
+    Route::middleware(['scope:Admin'])->post('/importDevices', [SmartDeviceController::class, 'importDevices']);
 });

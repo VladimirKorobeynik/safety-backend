@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Role;
+use App\Models\UserSensor;
 use App\Traits\ApiHelper;
+use App\Exports\UsersExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Validator;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -17,9 +22,15 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return $this->onSuccess(UserResource::collection(User::all()), '');
+            $users;
+            if ($request->searchString != '') {
+                $users = User::orWhereRaw("concat(name, ' ', surname) like '" . $request->searchString . "%' ")->get();
+            } else {
+                $users = User::all();
+            }
+        return $this->onSuccess(UserResource::collection($users), '');
     }
 
     /**
@@ -54,7 +65,7 @@ class UserController extends Controller
                 'address' => $request->input('address'),
                 'email' => $request->input('email'),
                 'birthday' => $request->input('birthday'),
-                'is_active' => true,
+                'is_active' => $request->input('is_active'),
                 'password' => Hash::make($request->input('password')),
             ]);
     
@@ -92,10 +103,11 @@ class UserController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => ['required'],
                 'surname' => ['required'],
-                'number' => ['required', 'min:12', 'numeric'],
-                'address' => ['required'],
+                'number' => ['min:12', 'numeric'],
+                'address',
                 'email' => ['required', 'email'],
-                'birthday' => ['required'],
+                'birthday',
+                'is_active'
             ]);
 
             if ($validator->fails()) {
@@ -112,7 +124,7 @@ class UserController extends Controller
                     'address' => $request->address,
                     'email' => $request->email,
                     'birthday' => $request->birthday,
-                    'is_active' => true,
+                    'is_active' => $request->is_active,
                 ]);
                 return $this->onSuccess($updatedUser, 'User updated');
             } else {
@@ -131,7 +143,9 @@ class UserController extends Controller
     public function destroy($user_id)
     {
         if (User::find($user_id)) {
+            UserSensor::where('user_id', $user_id)->update(['house_id' => null]);
             User::where('user_id', $user_id)->delete();
+
             return $this->onSuccess('', 'User deleted');
         }
         return $this->onError(404, 'This user not found');
@@ -152,5 +166,13 @@ class UserController extends Controller
         }
 
        return $this->onError(404, 'This user not found');
+    }
+
+    public function getRoles() {
+        return $this->onSuccess(Role::get(), '');
+    }
+
+    public function exportUsers() {
+        return (new UsersExport)->download('users.xlsx', \Maatwebsite\Excel\Excel::XLSX);
     }
 }

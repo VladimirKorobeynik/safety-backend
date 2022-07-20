@@ -26,7 +26,7 @@ class AuthController extends Controller
             return $this->onError(400, $validator->errors()->first());
         }
 
-        $user = User::where('email', $request->email)->get()->first();
+        $user = User::where('email', $request->email)->where('is_active', 1)->get()->first();
 
         if ($user != null && Hash::check($request->password, $user->password)) {
             $userRole = Role::where('role_id', $user->role_id)->select('name')->get()->first();
