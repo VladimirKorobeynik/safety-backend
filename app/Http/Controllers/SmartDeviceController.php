@@ -183,6 +183,15 @@ class SmartDeviceController extends Controller
         return $this->onError(404, 'This smart device not found');
    }
 
+   public function updateSmartDeviceSensorName(Request $request) {
+        foreach ($request->sensors as $sensor) {
+            $updated = UserSensor::where('user_sensor_id', $sensor['user_sensor_id'])->update([
+                'name' => $sensor['name'],
+            ]);
+        }
+        return $this->onSuccess('', 'Smart device sensors name update successfully');
+   }
+
 
    public function exportDevices() {
         return (new DevicesExport)->download('devices.xlsx', \Maatwebsite\Excel\Excel::XLSX);

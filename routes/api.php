@@ -33,6 +33,9 @@ Route::post('/signIn', [AuthController::class, 'signIn']);
 //Smart Devices
 Route::put('/buySmartDevice', [SmartDeviceController::class, 'buySmartDevice']);
 
+//Sensor
+Route::put('/updateSensorValue', [UserSensorController::class, 'updateSensorValue']);
+
 Route::middleware(['auth:api', 'role'])->group(function() {
     //Auth
     Route::middleware(['scope:User,Admin,Operator'])->post('/logout', [AuthController::class, 'logOut']);
@@ -52,8 +55,8 @@ Route::middleware(['auth:api', 'role'])->group(function() {
     Route::middleware(['scope:Admin'])->post('/createNotification', [NotificationController::class, 'store']);
     Route::middleware(['scope:Admin'])->put('/updateNotification/{notification_id}', [NotificationController::class, 'update']);
     Route::middleware(['scope:Admin'])->get('/getNotification/{notification_id}', [NotificationController::class, 'show']);
-    Route::middleware(['scope:Admin,User'])->delete('/deleteNotification/{notification_id}', [NotificationController::class, 'destroy']);
-    Route::middleware(['scope:User'])->get('/getUserNotifications/{user_id}', [NotificationController::class, 'getUserNotifications']);
+    Route::middleware(['scope:Admin,User,Operator'])->delete('/deleteNotification/{notification_id}', [NotificationController::class, 'destroy']);
+    Route::middleware(['scope:User,Operator'])->get('/getUserNotifications/{user_id}', [NotificationController::class, 'getUserNotifications']);
 
     //House
     Route::middleware(['scope:Admin'])->get('/allHouses', [HouseController::class, 'index']);
@@ -73,7 +76,7 @@ Route::middleware(['auth:api', 'role'])->group(function() {
     Route::middleware(['scope:User'])->get('/getUserSensors/{user_id}', [UserSensorController::class, 'getUserSensors']);
     Route::middleware(['scope:User'])->put('/activateUserSensor', [UserSensorController::class, 'activateUserSensor']);
     Route::middleware(['scope:User'])->get('/getUserSensorStatistic/{user_sensor_id}', [UserSensorController::class, 'getUserSensorStatistic']);
-    Route::middleware(['scope:User'])->put('/updateSensorValue', [UserSensorController::class, 'updateSensorValue']);
+    Route::middleware(['scope:User'])->get('/getSensorsType', [UserSensorController::class, 'getSensorsType']);
 
     //Script
     Route::middleware(['scope:User'])->post('/createScript', [ScriptController::class, 'store']);
@@ -88,6 +91,7 @@ Route::middleware(['auth:api', 'role'])->group(function() {
     Route::middleware(['scope:Admin'])->post('/createSmartDevice', [SmartDeviceController::class, 'store']);
     Route::middleware(['scope:Admin'])->delete('/deleteSmartDevice/{smt_dev_id}', [SmartDeviceController::class, 'destroy']);
     Route::middleware(['scope:User'])->put('/activateSmartDevice', [SmartDeviceController::class, 'activateSmartDevice']);
+    Route::middleware(['scope:User'])->put('/updateSmartDeviceSensorName', [SmartDeviceController::class, 'updateSmartDeviceSensorName']);
     Route::middleware(['scope:Admin'])->get('/exportDevices', [SmartDeviceController::class, 'exportDevices']);
     Route::middleware(['scope:Admin'])->post('/importDevices', [SmartDeviceController::class, 'importDevices']);
 });

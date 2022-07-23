@@ -289,26 +289,46 @@ class HouseController extends Controller
 
                 $statSmoke = [];
                 foreach ($smoke_sensors as $user_sens_id) {
-                    array_push($statSmoke, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->get());
+                    $count = count(UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->get());
+                    if ($count > 12) {
+                        array_push($statSmoke, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->skip($count - 12)->take(12)->get());
+                    } else {
+                        array_push($statSmoke, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->take($count)->get());
+                    }
                 }
 
                 $statHumidity = [];
                 foreach ($humidity_sensors as $user_sens_id) {
-                    array_push($statHumidity, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->get());
+                    $count = count(UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->get());
+                    if ($count > 12) {
+                        array_push($statHumidity, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->skip($count - 12)->take(12)->get());
+                    } else {
+                        array_push($statHumidity, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->take($count)->get());
+                    }
                 }
 
                 $statGas = [];
                 foreach ($gas_sensors as $user_sens_id) {
-                    array_push($statGas, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->get());
+                    $count = count(UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->get());
+                    if ($count > 12) {
+                        array_push($statGas, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->skip($count - 12)->take(12)->get());
+                    } else {
+                        array_push($statGas, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->take($count)->get());
+                    }
                 }
 
                 $statMotion = [];
                 foreach ($motion_sensors as $user_sens_id) {
-                    array_push($statMotion, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->get());
+                    $count = count(UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->get());
+                    if ($count > 12) {
+                        array_push($statMotion, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->skip($count - 12)->take(12)->get());
+                    } else {
+                        array_push($statMotion, UserSensorStatistic::where('user_sensor_id', $user_sens_id)->orderBy('created_at', 'ASC')->take($count)->get());
+                    }
                 }
                                 
-                $house['stat_smoke'] = $this->calculateAvarageStatistic($statSmoke);              
-                $house['stat_humidity'] = $this->calculateAvarageStatistic($statHumidity);
+                $house['stat_smoke'] = $this->calculateAvarageStatistic($statSmoke);          
+                $house['stat_humidity'] = $this->calculateAvarageStatistic($statHumidity); 
                 $house['stat_gas'] = $this->calculateAvarageStatistic($statGas);
                 $house['stat_motion'] = $this->calculateAvarageStatistic($statMotion);
                 
@@ -319,6 +339,7 @@ class HouseController extends Controller
                         $isHouseHaveSmartDevice = true;
                     }
                 }
+                
 
                 $house['smart_device_id'] = ($isHouseHaveSmartDevice) ? $device_num : null;
                 $house['count_smoke_sensors'] = $count_smoke_sensors;
@@ -333,10 +354,9 @@ class HouseController extends Controller
 
     public function calculateAvarageStatistic($statArr) {
         $avarageStatArr = [];
-        for ($i=0; $i < count($statArr); $i++) { 
+        for ($i=0; $i < count($statArr); $i++) {
             for ($j=0; $j < count($statArr[$i]); $j++) { 
                 $created_at_old = $statArr[$i][$j]->created_at;
-                $valueOld = (int) $statArr[$i][$j]->sensor_value;
                 $sumVal = 0;
                 for ($k=0; $k < count($statArr); $k++) { 
                     $created_at = $statArr[$k][$j]->created_at;

@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\UserSensor;
 use App\Models\UserSensorStatistic;
 use App\Models\User;
+use App\Models\House;
+use App\Models\Notification;
 use App\Http\Resources\UserSensorsResource;
+use Illuminate\Support\Facades\DB;
 use App\Traits\ApiHelper;
 
 class UserSensorController extends Controller
@@ -177,6 +180,43 @@ class UserSensorController extends Controller
         $sensor = UserSensor::where('user_sensor_id', $request->user_sensor_id)->get()->first();
 
         if ($sensor != null) {
+
+            $typeSensor = DB::table('sensor_types')->where('sensor_id', $sensor->sensor_id)->get()->first();
+            $house = House::where('house_id', $sensor->house_id)->get()->first();
+            $houseOperator = DB::table('operator_responsibility_areas')->where('house_id', $house->house_id)->get()->first();
+            
+            if ($request->value < $typeSensor->min_value) {
+                //User
+                Notification::create([
+                    'user_id' => $sensor->user_id,
+                    'title' => $typeSensor->type . ' sensor went off',
+                    'content' => 'In house - '. $house->name . ' ' . $typeSensor->type . ' sensor with name (' . $sensor->name . ') below minimum current values ' . $request->value . ' < min(' . $typeSensor->min_value . ')',
+
+                ]);
+                $user = User::where('user_id', $sensor->user_id)->get()->first();
+                //Operator
+                Notification::create([
+                    'user_id' => $houseOperator->user_id,
+                    'title' => $typeSensor->type . ' sensor went off',
+                    'content' => 'In house - '. $house->name . ' Owner (' . $user->name . ' ' . $user->surname . ') ' . $typeSensor->type . ' sensor with name (' . $sensor->name . ') below minimum current values ' . $request->value . ' < min(' . $typeSensor->min_value . ')',
+                ]);
+            }
+
+            if ($request->value >= $typeSensor->max_value) {
+                Notification::create([
+                    'user_id' => $sensor->user_id,
+                    'title' => $typeSensor->type . ' sensor went off',
+                    'content' => 'In house - '. $house->name . ' ' . $typeSensor->type . ' sensor with name (' . $sensor->name . ') above maximum, current values ' . $request->value . ' > max(' . $typeSensor->max_value . ')' 
+                ]);
+                $user = User::where('user_id', $sensor->user_id)->get()->first();
+                //Operator
+                Notification::create([
+                    'user_id' => $houseOperator->user_id,
+                    'title' => $typeSensor->type . ' sensor went off',
+                    'content' => 'In house - '. $house->name . ' Owner (' . $user->name . ' ' . $user->surname . ') ' . $typeSensor->type . ' sensor with name (' . $sensor->name . ') above maximum, current values ' . $request->value . ' > max(' . $typeSensor->max_value . ')' 
+                ]);
+            }
+
             $sensor->update([
                 'value' => $request->value
             ]);
@@ -199,5 +239,9 @@ class UserSensorController extends Controller
             return $this->onSuccess($sensorStatistic, 'Received statistics successfully');
         }
         return $this->onError(404, 'This sensor not found');
+    }
+
+    public function getSensorsType() {
+        return $this->onSuccess(DB::table('sensor_types')->get(), 'Sensors Types');
     }
 }
